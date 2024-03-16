@@ -22,11 +22,12 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: otakakot/repository-dispatch
-        ref: main
-    - run: repository-dispatch/entrypoint.sh
+    - name: Set GitHub Path
+      run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+      shell: bash
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+    - run: entrypoint.sh
       shell: bash
       env:
         REPOSITORY_OWNER: ${{ inputs.repository-owner }}
