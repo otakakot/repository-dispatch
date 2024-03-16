@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
-        uses: otakakot/repository-dispatch@v0.0.15
+        uses: otakakot/repository-dispatch@v1
         with:
           app-id: ${{ secrets.GITHUB_APP_ID }}
           secret-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
