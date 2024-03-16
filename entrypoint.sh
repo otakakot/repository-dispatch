@@ -1,10 +1,5 @@
 #!/bin/bash -ue
 
-key=`cat <<EOF
-${SECRET_KEY}
-EOF
-`
-
 go install github.com/otakakot/repository-dispatch@latest
 
 repos=(`echo ${REPOSITORY} | tr '/' ' '`)
