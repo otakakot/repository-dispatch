@@ -21,13 +21,19 @@ Also available on GitHub Actions.
 ```yaml
 jobs:
   dispatch:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - name: Repository Dispatch
-        uses: otakakot/repository-dispatch@v1
+      - name: Generate token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
         with:
-          token: token
-          repository: owner/name
+          app-id: ${{ secrets.GITHUB_APP_ID }}
+          private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+      - name: Dispatch
+        uses: otakakot/repository-dispatch@v1.0.0
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          repository: ${{ github.repository }}
           event-type: event-type
           client-payload: "{\"payload\": \"xxxxxxxxxx\"}"
 ```
