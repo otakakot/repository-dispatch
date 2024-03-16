@@ -5,7 +5,7 @@ ${SECRET_KEY}
 EOF
 `
 
-payload=`cat <<EOF
+payload=`cat <<EOF | jq
 ${CLIENT_PAYLOAD}
 EOF
 `
