@@ -26,7 +26,7 @@ runs:
       with:
         repository: otakakot/repository-dispatch
         ref: main
-    - run: entrypoint.sh
+    - run: repository-dispatch/entrypoint.sh
       shell: bash
       env:
         REPOSITORY_OWNER: ${{ inputs.repository-owner }}
