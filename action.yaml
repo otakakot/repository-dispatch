@@ -1,0 +1,37 @@
+name: 'Repository Dispatch'
+description: 'Create a repository dispatch event'
+inputs:
+  repository-owner:
+    description: 'The owner of the repository to send the dispatch.'
+    default: $GITHUB_REPOSITORY_OWNER
+  repository-name:
+    description: 'The name of the repository to send the dispatch.'
+    default: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+  app-id:
+    description: 'GitHub Apps App ID'
+    required: true
+  secret-key:
+    description: 'GitHub Apps Private Key'
+    required: true
+  event-type:
+    description: 'A custom webhook event name.'
+    required: true
+  client-payload:
+    description: 'JSON payload with extra information about the webhook event that your action or worklow may use.'
+    default: '{}'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: otakakot/repository-dispatch
+        ref: main
+    - run: entrypoint.sh
+      shell: bash
+      env:
+        REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+        REPOSITORY_NAME: ${{ inputs.repository-name }}
+        APP_ID: ${{ inputs.app-id }}
+        SECRET_KEY: ${{ inputs.secret-key }}
+        EVENT_TYPE: ${{ inputs.event-type }}
+        CLIENT_PAYLOAD: ${{ inputs.client-payload }}
