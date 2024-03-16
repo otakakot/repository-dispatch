@@ -17,7 +17,7 @@ func main() {
 		Aliases:  []string{"t"},
 	}
 
-	appIDFlag := &cli.StringFlag{
+	idFlag := &cli.StringFlag{
 		Name:     "id",
 		Usage:    "GitHub Apps ID",
 		Required: false,
@@ -65,7 +65,7 @@ func main() {
 		Description: "Dispatch a GitHub Actions workflow for a repository. Please specify github apps token or github apps app id and github apps app private key.",
 		Flags: []cli.Flag{
 			tokenKeyFlag,
-			appIDFlag,
+			idFlag,
 			privateKeyFlag,
 			repoOwnerFlag,
 			repoNameFlag,
