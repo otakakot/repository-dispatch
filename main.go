@@ -53,7 +53,7 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:  "dispatch",
+		Name:  "repository-dispatch",
 		Usage: "Repository Dispatch a GitHub Actions workflow",
 		Flags: []cli.Flag{
 			appIDFlag,
