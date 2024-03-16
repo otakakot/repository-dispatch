@@ -1,4 +1,4 @@
-name: 'Repository Dispatch'
+name: 'GitHub Repository Dispatch'
 description: 'Create a repository dispatch event'
 inputs:
   repository-owner:
