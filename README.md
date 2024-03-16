@@ -10,8 +10,18 @@ go install github.com/otakakot/repository-dispatch@latest
 
 ## Usage
 
+Please specify github apps token or github apps app id & github apps private key.
+
+### Specify GitHub Apps Token
+
 ```shell
-repository-dispatch --token ${TOKEN} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --secret-key "${SECRET_KEY}" --client-payload "${CLIENT_PAYLOAD}"
+repository-dispatch --token ${TOKEN} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --client-payload "${CLIENT_PAYLOAD}"
+```
+
+### Specify GitHub Apps ID & GitHub Apps Private Key
+
+```shell
+repository-dispatch --id ${ID} --private-key ${PRIVATE_KEY} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --client-payload "${CLIENT_PAYLOAD}"
 ```
 
 ## Use GitHub Actions
@@ -28,8 +38,8 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.GITHUB_APP_ID }}
-          private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.GITHUB_APPS_ID }}
+          private-key: ${{ secrets.GITHUB_APPS_PRIVATE_KEY }}
           owner: owner          # need for other repository dispatch
           repositories: name    # need for other repository dispatch
       - name: Repository Dispatch

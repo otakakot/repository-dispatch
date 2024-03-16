@@ -14,8 +14,8 @@ import (
 )
 
 type CreateGitHubAppsTokenInput struct {
-	GitHubAppID     string
-	GitHubSecretKey string
+	GitHubAppID         string
+	GitHubAppPrivateKey string
 }
 
 func CreateGitHubAppsToken(
@@ -30,7 +30,7 @@ func CreateGitHubAppsToken(
 		"iss": input.GitHubAppID,
 	}
 
-	secret := []byte(input.GitHubSecretKey)
+	secret := []byte(input.GitHubAppPrivateKey)
 
 	block, _ := pem.Decode(secret)
 

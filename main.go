@@ -10,25 +10,25 @@ import (
 )
 
 func main() {
-	appIDFlag := &cli.StringFlag{
-		Name:     "app-id",
-		Usage:    "GitHub App ID",
-		Required: false,
-		Aliases:  []string{"i"},
-	}
-
-	secretKeyFlag := &cli.StringFlag{
-		Name:     "secret-key",
-		Usage:    "GitHub App Secret Key",
-		Required: false,
-		Aliases:  []string{"k"},
-	}
-
 	tokenKeyFlag := &cli.StringFlag{
 		Name:     "token",
 		Usage:    "GitHub Apps Token",
 		Required: false,
 		Aliases:  []string{"t"},
+	}
+
+	appIDFlag := &cli.StringFlag{
+		Name:     "id",
+		Usage:    "GitHub Apps ID",
+		Required: false,
+		Aliases:  []string{"i"},
+	}
+
+	privateKeyFlag := &cli.StringFlag{
+		Name:     "private-key",
+		Usage:    "GitHub Apps Private Key",
+		Required: false,
+		Aliases:  []string{"k"},
 	}
 
 	repoOwnerFlag := &cli.StringFlag{
@@ -62,11 +62,11 @@ func main() {
 	app := &cli.App{
 		Name:        "repository-dispatch",
 		Usage:       "Repository Dispatch a GitHub Actions workflow",
-		Description: "Dispatch a GitHub Actions workflow for a repository. Please specify token or app-id and secret-key.",
+		Description: "Dispatch a GitHub Actions workflow for a repository. Please specify github apps token or github apps app id and github apps app private key.",
 		Flags: []cli.Flag{
 			tokenKeyFlag,
 			appIDFlag,
-			secretKeyFlag,
+			privateKeyFlag,
 			repoOwnerFlag,
 			repoNameFlag,
 			eventTypeFlag,
@@ -79,8 +79,8 @@ func main() {
 				res, _, err := repository.CreateGitHubAppsToken(
 					c.Context,
 					repository.CreateGitHubAppsTokenInput{
-						GitHubAppID:     c.String("app-id"),
-						GitHubSecretKey: c.String("secret-key"),
+						GitHubAppID:         c.String("app-id"),
+						GitHubAppPrivateKey: c.String("app-private-key"),
 					},
 				)
 				if err != nil {
