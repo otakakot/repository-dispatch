@@ -27,7 +27,13 @@ runs:
       shell: bash
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
-    - run: entrypoint.sh
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+        check-latest: true
+    - name: Dispatch Repository
+      run: entrypoint.sh
       shell: bash
       env:
         REPOSITORY_OWNER: ${{ inputs.repository-owner }}
