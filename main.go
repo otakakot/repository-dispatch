@@ -13,15 +13,22 @@ func main() {
 	appIDFlag := &cli.StringFlag{
 		Name:     "app-id",
 		Usage:    "GitHub App ID",
-		Required: true,
+		Required: false,
 		Aliases:  []string{"i"},
 	}
 
 	secretKeyFlag := &cli.StringFlag{
 		Name:     "secret-key",
 		Usage:    "GitHub App Secret Key",
-		Required: true,
+		Required: false,
 		Aliases:  []string{"k"},
+	}
+
+	tokenKeyFlag := &cli.StringFlag{
+		Name:     "token",
+		Usage:    "GitHub Apps Token",
+		Required: false,
+		Aliases:  []string{"t"},
 	}
 
 	repoOwnerFlag := &cli.StringFlag{
@@ -56,6 +63,7 @@ func main() {
 		Name:  "repository-dispatch",
 		Usage: "Repository Dispatch a GitHub Actions workflow",
 		Flags: []cli.Flag{
+			tokenKeyFlag,
 			appIDFlag,
 			secretKeyFlag,
 			repoOwnerFlag,
@@ -64,11 +72,27 @@ func main() {
 			clientPayloadFlag,
 		},
 		Action: func(c *cli.Context) error {
+			token := c.String("token")
+
+			if token == "" {
+				res, _, err := repository.CreateGitHubAppsToken(
+					c.Context,
+					repository.CreateGitHubAppsTokenInput{
+						GitHubAppID:     c.String("app-id"),
+						GitHubSecretKey: c.String("secret-key"),
+					},
+				)
+				if err != nil {
+					return err
+				}
+
+				token = res.GetToken()
+			}
+
 			if _, _, err := repository.Dispatch(
 				c.Context,
-				repository.Input{
-					GitHubAppID:     c.String("app-id"),
-					GitHubSecretKey: c.String("secret-key"),
+				repository.DispatchInput{
+					GitHubAppsToken: token,
 					RepositoryOwner: c.String("repository-owner"),
 					RepositoryName:  c.String("repository-name"),
 					EventType:       c.String("event-type"),

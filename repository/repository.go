@@ -13,19 +13,15 @@ import (
 	"github.com/google/go-github/v60/github"
 )
 
-type Input struct {
+type CreateGitHubAppsTokenInput struct {
 	GitHubAppID     string
 	GitHubSecretKey string
-	RepositoryOwner string
-	RepositoryName  string
-	EventType       string
-	ClientPayload   string
 }
 
-func Dispatch(
+func CreateGitHubAppsToken(
 	ctx context.Context,
-	input Input,
-) (*github.Repository, *github.Response, error) {
+	input CreateGitHubAppsTokenInput,
+) (*github.InstallationToken, *github.Response, error) {
 	now := time.Now()
 
 	payload := jwt.MapClaims{
@@ -51,7 +47,7 @@ func Dispatch(
 	}
 
 	client := github.NewClient(&http.Client{
-		Transport: &BearerTokenTransport{JWT: jwt},
+		Transport: &bearerTokenTransport{JWT: jwt},
 	})
 
 	installations, _, err := client.Apps.ListInstallations(ctx, nil)
@@ -63,13 +59,23 @@ func Dispatch(
 		return nil, nil, errors.New("expected exactly one installation")
 	}
 
-	accessToken, _, err := client.Apps.CreateInstallationToken(ctx, installations[0].GetID(), nil)
-	if err != nil {
-		return nil, nil, err
-	}
+	return client.Apps.CreateInstallationToken(ctx, installations[0].GetID(), nil)
+}
 
-	client = github.NewClient(&http.Client{
-		Transport: &TokenTransport{Token: accessToken.GetToken()},
+type DispatchInput struct {
+	GitHubAppsToken string
+	RepositoryOwner string
+	RepositoryName  string
+	EventType       string
+	ClientPayload   string
+}
+
+func Dispatch(
+	ctx context.Context,
+	input DispatchInput,
+) (*github.Repository, *github.Response, error) {
+	client := github.NewClient(&http.Client{
+		Transport: &tokenTransport{Token: input.GitHubAppsToken},
 	})
 
 	cp := json.RawMessage(input.ClientPayload)
@@ -85,21 +91,21 @@ func Dispatch(
 	)
 }
 
-type BearerTokenTransport struct {
+type bearerTokenTransport struct {
 	JWT string
 }
 
-func (btt *BearerTokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (btt *bearerTokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", "Bearer "+btt.JWT)
 
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-type TokenTransport struct {
+type tokenTransport struct {
 	Token string
 }
 
-func (tt *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (tt *tokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", "token "+tt.Token)
 
 	return http.DefaultTransport.RoundTrip(req)

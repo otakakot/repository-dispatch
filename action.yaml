@@ -1,18 +1,12 @@
 name: 'GitHub Repository Dispatch'
 description: 'Create a repository dispatch event'
 inputs:
-  repository-owner:
-    description: 'The owner of the repository to send the dispatch.'
-    default: $GITHUB_REPOSITORY_OWNER
-  repository-name:
-    description: 'The name of the repository to send the dispatch.'
-    default: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
-  app-id:
-    description: 'GitHub Apps App ID'
+  token:
+    description: 'GitHub Apps Token'
     required: true
-  secret-key:
-    description: 'GitHub Apps Private Key'
-    required: true
+  repository:
+    description: 'The repository to send the dispatch event to'
+    default: ${{ github.repository }}
   event-type:
     description: 'A custom webhook event name.'
     required: true
@@ -36,9 +30,7 @@ runs:
       run: entrypoint.sh
       shell: bash
       env:
-        REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-        REPOSITORY_NAME: ${{ inputs.repository-name }}
-        APP_ID: ${{ inputs.app-id }}
-        SECRET_KEY: ${{ inputs.secret-key }}
+        TOKEN: ${{ inputs.token }}
+        REPOSITORY: ${{ inputs.repository }}
         EVENT_TYPE: ${{ inputs.event-type }}
         CLIENT_PAYLOAD: ${{ inputs.client-payload }}
