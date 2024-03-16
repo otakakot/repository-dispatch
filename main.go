@@ -60,8 +60,9 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:  "repository-dispatch",
-		Usage: "Repository Dispatch a GitHub Actions workflow",
+		Name:        "repository-dispatch",
+		Usage:       "Repository Dispatch a GitHub Actions workflow",
+		Description: "Dispatch a GitHub Actions workflow for a repository. Please specify token or app-id and secret-key.",
 		Flags: []cli.Flag{
 			tokenKeyFlag,
 			appIDFlag,
