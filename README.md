@@ -1,6 +1,6 @@
 # repository-dispatch
 
-Create a repository dispatch event using the GitHub Apps token.
+Create a repository dispatch event using the GitHub Apps Token.
 
 ## Go Install
 
@@ -10,7 +10,7 @@ go install github.com/otakakot/repository-dispatch@latest
 
 ## Usage
 
-Please specify github apps token or github apps app id & github apps private key.
+Please specify GitHub Apps Token or GitHub Apps ID & GitHub Apps Private Key.
 
 ### Specify GitHub Apps Token
 
