@@ -2,28 +2,6 @@
 
 Create a repository dispatch event using the GitHub Apps Token.
 
-## Go Install
-
-```shell
-go install github.com/otakakot/repository-dispatch@latest
-```
-
-## Usage
-
-Please specify GitHub Apps Token or GitHub Apps ID & GitHub Apps Private Key.
-
-### Specify GitHub Apps Token
-
-```shell
-repository-dispatch --token ${TOKEN} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --client-payload "${CLIENT_PAYLOAD}"
-```
-
-### Specify GitHub Apps ID & GitHub Apps Private Key
-
-```shell
-repository-dispatch --id ${ID} --private-key ${PRIVATE_KEY} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --client-payload "${CLIENT_PAYLOAD}"
-```
-
 ## Use GitHub Actions
 
 Also available on GitHub Actions.
@@ -49,4 +27,26 @@ jobs:
           repository: owner/name
           event-type: event-type
           client-payload: '{"payload": "xxxxxxxxxx"}'
+```
+
+## CLI Go Install
+
+```shell
+go install github.com/otakakot/repository-dispatch@latest
+```
+
+## Usage
+
+Please specify GitHub Apps Token or GitHub Apps ID & GitHub Apps Private Key.
+
+### Specify GitHub Apps Token
+
+```shell
+repository-dispatch --token ${TOKEN} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --client-payload "${CLIENT_PAYLOAD}"
+```
+
+### Specify GitHub Apps ID & GitHub Apps Private Key
+
+```shell
+repository-dispatch --id ${ID} --private-key ${PRIVATE_KEY} --event-type ${EVENT_TYPE} --repository-owner ${REPOSITORY_OWNER} --repository-name ${REPOSITORY_NAME} --client-payload "${CLIENT_PAYLOAD}"
 ```
