@@ -48,5 +48,5 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           repository: owner/name
           event-type: event-type
-          client-payload: "{\"payload\": \"xxxxxxxxxx\"}"
+          client-payload: '{"payload": "xxxxxxxxxx"}'
 ```
