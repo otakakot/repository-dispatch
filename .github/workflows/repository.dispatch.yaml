@@ -1,0 +1,13 @@
+name: repository dispatch
+run-name: ${{ github.ref_name }} by @${{ github.actor }} at ${{ github.workflow }}
+on:
+  # https://docs.github.com/en/webhooks/webhook-events-and-payloads#repository_dispatch
+  repository_dispatch:
+    types:
+      - repository_dispatch
+jobs:
+  repository_dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        run: echo "${{ github.event.client_payload.ref }} ${{ github.event.client_payload.sha }} "
