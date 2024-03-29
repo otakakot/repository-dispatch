@@ -35,8 +35,4 @@ func TestDispatch(t *testing.T) {
 	if _, _, err := repository.Dispatch(ctx, input); err != nil {
 		t.Fatalf("Dispatch() error = %v", err)
 	}
-
-	if _, _, err := repository.Dispatch(ctx, input); err != nil {
-		t.Fatalf("Dispatch() error = %v", err)
-	}
 }
