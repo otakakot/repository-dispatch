@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"cmp"
 	"context"
 	"crypto/x509"
 	"encoding/json"
@@ -13,9 +14,12 @@ import (
 	"github.com/google/go-github/v60/github"
 )
 
+var ErrExactryOneInstallation = errors.New("expected exactly one installation")
+
 type CreateGitHubAppsTokenInput struct {
 	GitHubAppID         string
 	GitHubAppPrivateKey string
+	Expires             int64
 }
 
 func CreateGitHubAppsToken(
@@ -24,9 +28,13 @@ func CreateGitHubAppsToken(
 ) (*github.InstallationToken, *github.Response, error) {
 	now := time.Now()
 
+	const def = 60
+
+	expires := cmp.Or(input.Expires, def)
+
 	payload := jwt.MapClaims{
-		"exp": now.Unix() + 60,
 		"iat": now.Unix(),
+		"exp": now.Unix() + expires,
 		"iss": input.GitHubAppID,
 	}
 
@@ -56,7 +64,7 @@ func CreateGitHubAppsToken(
 	}
 
 	if len(installations) != 1 {
-		return nil, nil, errors.New("expected exactly one installation")
+		return nil, nil, ErrExactryOneInstallation
 	}
 
 	return client.Apps.CreateInstallationToken(ctx, installations[0].GetID(), nil)
@@ -78,7 +86,7 @@ func Dispatch(
 		Transport: &tokenTransport{Token: input.GitHubAppsToken},
 	})
 
-	cp := json.RawMessage(input.ClientPayload)
+	payload := json.RawMessage(input.ClientPayload)
 
 	return client.Repositories.Dispatch(
 		ctx,
@@ -86,7 +94,7 @@ func Dispatch(
 		input.RepositoryName,
 		github.DispatchRequestOptions{
 			EventType:     input.EventType,
-			ClientPayload: &cp,
+			ClientPayload: &payload,
 		},
 	)
 }
