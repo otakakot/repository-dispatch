@@ -4,9 +4,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/otakakot/repository-dispatch/repository"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
@@ -62,7 +61,7 @@ func main() {
 	app := &cli.App{
 		Name:        "repository-dispatch",
 		Usage:       "Repository Dispatch a GitHub Actions workflow",
-		Description: "Dispatch a GitHub Actions workflow for a repository. Please specify github apps token or github apps app id and github apps app private key.",
+		Description: "Dispatch a GitHub Actions workflow for a repository. Please specify github apps token or github apps app id and github apps app private key.", //nolint:lll
 		Flags: []cli.Flag{
 			tokenKeyFlag,
 			idFlag,
@@ -72,15 +71,15 @@ func main() {
 			eventTypeFlag,
 			clientPayloadFlag,
 		},
-		Action: func(c *cli.Context) error {
-			token := c.String("token")
+		Action: func(ctx *cli.Context) error {
+			token := ctx.String("token")
 
 			if token == "" {
 				res, _, err := repository.CreateGitHubAppsToken(
-					c.Context,
+					ctx.Context,
 					repository.CreateGitHubAppsTokenInput{
-						GitHubAppID:         c.String("app-id"),
-						GitHubAppPrivateKey: c.String("app-private-key"),
+						GitHubAppID:         ctx.String("app-id"),
+						GitHubAppPrivateKey: ctx.String("app-private-key"),
 					},
 				)
 				if err != nil {
@@ -91,13 +90,13 @@ func main() {
 			}
 
 			if _, _, err := repository.Dispatch(
-				c.Context,
+				ctx.Context,
 				repository.DispatchInput{
 					GitHubAppsToken: token,
-					RepositoryOwner: c.String("repository-owner"),
-					RepositoryName:  c.String("repository-name"),
-					EventType:       c.String("event-type"),
-					ClientPayload:   c.String("client-payload"),
+					RepositoryOwner: ctx.String("repository-owner"),
+					RepositoryName:  ctx.String("repository-name"),
+					EventType:       ctx.String("event-type"),
+					ClientPayload:   ctx.String("client-payload"),
 				},
 			); err != nil {
 				return err

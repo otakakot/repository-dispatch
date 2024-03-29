@@ -1,0 +1,31 @@
+name: test
+run-name: ${{ github.ref_name }} by @${{ github.actor }} ${{ github.workflow }}
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/test.yaml
+      - "**/*.go"
+      - go.mod
+      - go.sum
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Go Test
+        env:
+          GITHUB_APP_ID: ${{ secrets.BOT_GITHUB_APP_ID }}
+          GITHUB_APP_PRIVATE_KEY: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          GITHUB_REPOSITORY_OWNER: otakakot
+          GITHUB_REPOSITORY_NAME: repository-dispatch
+          EVENT_TYPE: repository_dispatch
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: go test ./...
