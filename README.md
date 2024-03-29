@@ -10,7 +10,7 @@ Use in combination with [actions/create-github-app-token](https://github.com/mar
 ```yaml
 jobs:
   dispatch:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Generate token
         id: generate-token
