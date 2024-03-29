@@ -16,8 +16,8 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.GITHUB_APPS_ID }}
-          private-key: ${{ secrets.GITHUB_APPS_PRIVATE_KEY }}
+          app-id: ${{ secrets.BOT_GITHUB_APPS_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APPS_PRIVATE_KEY }}
           owner: owner          # need for other repository dispatch
           repositories: name    # need for other repository dispatch
       - name: Repository Dispatch
