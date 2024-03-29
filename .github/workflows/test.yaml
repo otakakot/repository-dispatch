@@ -23,8 +23,8 @@ jobs:
         env:
           GITHUB_APP_ID: ${{ secrets.BOT_GITHUB_APP_ID }}
           GITHUB_APP_PRIVATE_KEY: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-          GITHUB_REPOSITORY_NAME: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+          GITHUB_REPOSITORY_OWNER: otakakot
+          GITHUB_REPOSITORY_NAME: repository-dispatch
           EVENT_TYPE: repository_dispatch
           GITHUB_REF: ${{ github.ref }}
           GITHUB_SHA: ${{ github.sha }}
