@@ -5,6 +5,7 @@ go 1.22.2
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-github/v61 v61.0.0
+	github.com/google/go-github/v63 v63.0.0
 	github.com/urfave/cli/v2 v2.27.2
 )
 
