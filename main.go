@@ -4,7 +4,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/otakakot/repository-dispatch/repository"
+	"github.com/otakakot/repository-dispatch/githubx"
 	"github.com/urfave/cli/v2"
 )
 
@@ -75,9 +75,9 @@ func main() {
 			token := ctx.String("token")
 
 			if token == "" {
-				res, _, err := repository.CreateGitHubAppsToken(
+				res, _, err := githubx.CreateGitHubAppsToken(
 					ctx.Context,
-					repository.CreateGitHubAppsTokenInput{
+					githubx.CreateGitHubAppsTokenInput{
 						GitHubAppID:         ctx.String("app-id"),
 						GitHubAppPrivateKey: ctx.String("app-private-key"),
 					},
@@ -89,9 +89,9 @@ func main() {
 				token = res.GetToken()
 			}
 
-			if _, _, err := repository.Dispatch(
+			if _, _, err := githubx.Dispatch(
 				ctx.Context,
-				repository.DispatchInput{
+				githubx.DispatchInput{
 					GitHubAppsToken: token,
 					RepositoryOwner: ctx.String("repository-owner"),
 					RepositoryName:  ctx.String("repository-name"),

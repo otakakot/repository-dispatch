@@ -1,4 +1,4 @@
-package repository
+package githubx
 
 import (
 	"cmp"
