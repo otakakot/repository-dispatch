@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/go-github/v61/github"
+	"github.com/google/go-github/v64/github"
 )
 
 var ErrExactryOneInstallation = errors.New("expected exactly one installation")

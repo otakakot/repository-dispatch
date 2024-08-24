@@ -48,12 +48,25 @@ type RulesetRepositoryIDsConditionParameters struct {
 	RepositoryIDs []int64 `json:"repository_ids,omitempty"`
 }
 
+// RulesetRepositoryPropertyTargetParameters represents a repository_property name and values to be used for targeting.
+type RulesetRepositoryPropertyTargetParameters struct {
+	Name   string   `json:"name"`
+	Values []string `json:"property_values"`
+}
+
+// RulesetRepositoryPropertyConditionParameters represents the conditions object for repository_property.
+type RulesetRepositoryPropertyConditionParameters struct {
+	Include []RulesetRepositoryPropertyTargetParameters `json:"include"`
+	Exclude []RulesetRepositoryPropertyTargetParameters `json:"exclude"`
+}
+
 // RulesetConditions represents the conditions object in a ruleset.
-// Set either RepositoryName or RepositoryID, not both.
+// Set either RepositoryName or RepositoryID or RepositoryProperty, not more than one.
 type RulesetConditions struct {
-	RefName        *RulesetRefConditionParameters             `json:"ref_name,omitempty"`
-	RepositoryName *RulesetRepositoryNamesConditionParameters `json:"repository_name,omitempty"`
-	RepositoryID   *RulesetRepositoryIDsConditionParameters   `json:"repository_id,omitempty"`
+	RefName            *RulesetRefConditionParameters                `json:"ref_name,omitempty"`
+	RepositoryName     *RulesetRepositoryNamesConditionParameters    `json:"repository_name,omitempty"`
+	RepositoryID       *RulesetRepositoryIDsConditionParameters      `json:"repository_id,omitempty"`
+	RepositoryProperty *RulesetRepositoryPropertyConditionParameters `json:"repository_property,omitempty"`
 }
 
 // RulePatternParameters represents the rule pattern parameters.
@@ -64,6 +77,11 @@ type RulePatternParameters struct {
 	// Possible values for Operator are: starts_with, ends_with, contains, regex
 	Operator string `json:"operator"`
 	Pattern  string `json:"pattern"`
+}
+
+// RuleFileParameters represents a list of file paths.
+type RuleFileParameters struct {
+	RestrictedFilePaths *[]string `json:"restricted_file_paths"`
 }
 
 // UpdateAllowsFetchAndMergeRuleParameters represents the update rule parameters.
@@ -134,7 +152,7 @@ func (r *RepositoryRule) UnmarshalJSON(data []byte) error {
 	r.Type = RepositoryRule.Type
 
 	switch RepositoryRule.Type {
-	case "creation", "deletion", "required_linear_history", "required_signatures", "non_fast_forward":
+	case "creation", "deletion", "merge_queue", "non_fast_forward", "required_linear_history", "required_signatures":
 		r.Parameters = nil
 	case "update":
 		if RepositoryRule.Parameters == nil {
@@ -201,13 +219,29 @@ func (r *RepositoryRule) UnmarshalJSON(data []byte) error {
 		rawParams := json.RawMessage(bytes)
 
 		r.Parameters = &rawParams
+	case "file_path_restriction":
+		params := RuleFileParameters{}
+		if err := json.Unmarshal(*RepositoryRule.Parameters, &params); err != nil {
+			return err
+		}
+		bytes, _ := json.Marshal(params)
+		rawParams := json.RawMessage(bytes)
+
+		r.Parameters = &rawParams
 	default:
 		r.Type = ""
 		r.Parameters = nil
-		return fmt.Errorf("RepositoryRule.Type %T is not yet implemented, unable to unmarshal", RepositoryRule.Type)
+		return fmt.Errorf("RepositoryRule.Type %q is not yet implemented, unable to unmarshal (%#v)", RepositoryRule.Type, RepositoryRule)
 	}
 
 	return nil
+}
+
+// NewMergeQueueRule creates a rule to only allow merges via a merge queue.
+func NewMergeQueueRule() (rule *RepositoryRule) {
+	return &RepositoryRule{
+		Type: "merge_queue",
+	}
 }
 
 // NewCreationRule creates a rule to only allow users with bypass permission to create matching refs.
@@ -370,6 +404,18 @@ func NewRequiredWorkflowsRule(params *RequiredWorkflowsRuleParameters) (rule *Re
 	}
 }
 
+// NewFilePathRestrictionRule creates a rule to restrict file paths from being pushed to.
+func NewFilePathRestrictionRule(params *RuleFileParameters) (rule *RepositoryRule) {
+	bytes, _ := json.Marshal(params)
+
+	rawParams := json.RawMessage(bytes)
+
+	return &RepositoryRule{
+		Type:       "file_path_restriction",
+		Parameters: &rawParams,
+	}
+}
+
 // Ruleset represents a GitHub ruleset object.
 type Ruleset struct {
 	ID   *int64 `json:"id,omitempty"`
@@ -382,6 +428,24 @@ type Ruleset struct {
 	// Possible values for Enforcement are: disabled, active, evaluate
 	Enforcement  string             `json:"enforcement"`
 	BypassActors []*BypassActor     `json:"bypass_actors,omitempty"`
+	NodeID       *string            `json:"node_id,omitempty"`
+	Links        *RulesetLinks      `json:"_links,omitempty"`
+	Conditions   *RulesetConditions `json:"conditions,omitempty"`
+	Rules        []*RepositoryRule  `json:"rules,omitempty"`
+}
+
+// rulesetNoOmitBypassActors represents a GitHub ruleset object. The struct does not omit bypassActors if the field is nil or an empty array is passed.
+type rulesetNoOmitBypassActors struct {
+	ID   *int64 `json:"id,omitempty"`
+	Name string `json:"name"`
+	// Possible values for Target are branch, tag
+	Target *string `json:"target,omitempty"`
+	// Possible values for SourceType are: Repository, Organization
+	SourceType *string `json:"source_type,omitempty"`
+	Source     string  `json:"source"`
+	// Possible values for Enforcement are: disabled, active, evaluate
+	Enforcement  string             `json:"enforcement"`
+	BypassActors []*BypassActor     `json:"bypass_actors"`
 	NodeID       *string            `json:"node_id,omitempty"`
 	Links        *RulesetLinks      `json:"_links,omitempty"`
 	Conditions   *RulesetConditions `json:"conditions,omitempty"`
@@ -498,6 +562,48 @@ func (s *RepositoriesService) UpdateRuleset(ctx context.Context, owner, repo str
 	}
 
 	return ruleset, resp, nil
+}
+
+// UpdateRulesetNoBypassActor updates a ruleset for the specified repository.
+//
+// This function is necessary as the UpdateRuleset function does not marshal ByPassActor if passed as nil or an empty array.
+//
+// GitHub API docs: https://docs.github.com/rest/repos/rules#update-a-repository-ruleset
+//
+//meta:operation PUT /repos/{owner}/{repo}/rulesets/{ruleset_id}
+func (s *RepositoriesService) UpdateRulesetNoBypassActor(ctx context.Context, owner, repo string, rulesetID int64, rs *Ruleset) (*Ruleset, *Response, error) {
+	u := fmt.Sprintf("repos/%v/%v/rulesets/%v", owner, repo, rulesetID)
+
+	rsNoBypassActor := &rulesetNoOmitBypassActors{}
+
+	if rs != nil {
+		rsNoBypassActor = &rulesetNoOmitBypassActors{
+			ID:           rs.ID,
+			Name:         rs.Name,
+			Target:       rs.Target,
+			SourceType:   rs.SourceType,
+			Source:       rs.Source,
+			Enforcement:  rs.Enforcement,
+			BypassActors: rs.BypassActors,
+			NodeID:       rs.NodeID,
+			Links:        rs.Links,
+			Conditions:   rs.Conditions,
+			Rules:        rs.Rules,
+		}
+	}
+
+	req, err := s.client.NewRequest("PUT", u, rsNoBypassActor)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var ruleSet *Ruleset
+	resp, err := s.client.Do(ctx, req, &ruleSet)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return ruleSet, resp, nil
 }
 
 // DeleteRuleset deletes a ruleset for the specified repository.

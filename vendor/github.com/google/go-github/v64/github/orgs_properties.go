@@ -7,6 +7,7 @@ package github
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 )
 
@@ -15,12 +16,19 @@ type CustomProperty struct {
 	// PropertyName is required for most endpoints except when calling CreateOrUpdateCustomProperty;
 	// where this is sent in the path and thus can be omitted.
 	PropertyName *string `json:"property_name,omitempty"`
-	// Possible values for ValueType are: string, single_select
-	ValueType     string   `json:"value_type"`
-	Required      *bool    `json:"required,omitempty"`
-	DefaultValue  *string  `json:"default_value,omitempty"`
-	Description   *string  `json:"description,omitempty"`
+	// The type of the value for the property. Can be one of: string, single_select.
+	ValueType string `json:"value_type"`
+	// Whether the property is required.
+	Required *bool `json:"required,omitempty"`
+	// Default value of the property.
+	DefaultValue *string `json:"default_value,omitempty"`
+	// Short description of the property.
+	Description *string `json:"description,omitempty"`
+	// An ordered list of the allowed values of the property. The property can have up to 200
+	// allowed values.
 	AllowedValues []string `json:"allowed_values,omitempty"`
+	// Who can edit the values of the property. Can be one of: org_actors, org_and_repo_actors, nil (null).
+	ValuesEditableBy *string `json:"values_editable_by,omitempty"`
 }
 
 // RepoCustomPropertyValue represents a repository custom property value.
@@ -33,8 +41,42 @@ type RepoCustomPropertyValue struct {
 
 // CustomPropertyValue represents a custom property value.
 type CustomPropertyValue struct {
-	PropertyName string  `json:"property_name"`
-	Value        *string `json:"value,omitempty"`
+	PropertyName string      `json:"property_name"`
+	Value        interface{} `json:"value,omitempty"`
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// This helps us handle the fact that Value can be either a string, []string, or nil.
+func (cpv *CustomPropertyValue) UnmarshalJSON(data []byte) error {
+	type aliasCustomPropertyValue CustomPropertyValue
+	aux := &struct {
+		*aliasCustomPropertyValue
+	}{
+		aliasCustomPropertyValue: (*aliasCustomPropertyValue)(cpv),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	switch v := aux.Value.(type) {
+	case nil:
+		cpv.Value = nil
+	case string:
+		cpv.Value = v
+	case []interface{}:
+		strSlice := make([]string, len(v))
+		for i, item := range v {
+			if str, ok := item.(string); ok {
+				strSlice[i] = str
+			} else {
+				return fmt.Errorf("non-string value in string array")
+			}
+		}
+		cpv.Value = strSlice
+	default:
+		return fmt.Errorf("unexpected value type: %T", v)
+	}
+	return nil
 }
 
 // GetAllCustomProperties gets all custom properties that are defined for the specified organization.

@@ -11,3 +11,9 @@ tool: ## install tool needs aqua
 .PHONY: lint
 lint: ## run linters
 	@golangci-lint run ./... --fix
+
+.PHONY: module
+module: ## go module update
+	@go get -u -t ./...
+	@go mod tidy
+	@go mod vendor
